@@ -1,0 +1,62 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <stack>
+
+using namespace std;
+
+int dfs(int x, int& id, vector<vector<int>>& adj, vector<int>& node, vector<bool>& finished, vector<vector<int>>& SCC, stack<int>& s) {
+    node[x] = id++;
+    s.push(x);
+
+    int parent = node[x];
+    for (int cur : adj[x]) {
+        if (node[cur] == 0) parent = min(parent, dfs(cur, id, adj, node, finished, SCC, s));
+        else if (!finished[cur]) parent = min(parent, node[cur]);
+    }
+
+    if (parent == node[x]) {
+        vector<int> scc;
+        while (true) {
+            int temp = s.top();
+            s.pop();
+            scc.push_back(temp);
+            finished[temp] = true;
+            if (temp == x) break;
+        }
+        sort(scc.begin(), scc.end());
+        SCC.push_back(scc);
+    }
+    return parent;
+}
+
+int main() {
+    int ver, edg;
+    int id = 1;
+    cin >> ver >> edg;
+    vector<int> node(ver + 1, 0);
+    vector<bool> finished(ver + 1, false);
+    vector<vector<int>> adj(ver + 1);
+    vector<vector<int>> SCC;
+    stack<int> s;
+
+    for (int i = 0; i < edg; i++) {
+        int start, end;
+        cin >> start >> end;
+        adj[start].push_back(end);
+    }
+
+    for (int i = 1; i <= ver; i++) {
+        if (node[i] == 0) dfs(i, id, adj, node, finished, SCC, s);
+    }
+
+    sort(SCC.begin(), SCC.end());
+
+    cout << SCC.size() << '\n';
+    for (const auto& scc : SCC) {
+        for (int tp : scc) {
+            cout << tp << ' ';
+        }
+        cout << -1 << '\n';
+    }
+}
